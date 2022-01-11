@@ -1,4 +1,4 @@
-(defpackage :serapeum/contrib/hooks
+(defpackage :hooks
   (:use :common-lisp)
   (:import-from :serapeum
                 #:*hook*
@@ -48,7 +48,7 @@
    #:hook-string->string
    #:hook-number->number
    #:hook-any))
-(in-package :serapeum/contrib/hooks)
+(in-package :hooks)
 
 (defclass handler ()
   ((name :initarg :name
