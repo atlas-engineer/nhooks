@@ -116,7 +116,7 @@ Detail: ~a" function ftype c))))
   (values))
 
 (defmethod initialize-instance :after ((handler handler) &key &allow-other-keys)
-  (with-slots (name fn handler-type) handler
+  (with-slots (name fn) handler
     (setf name (or name (let ((fname (nth-value 2 (function-lambda-expression fn))))
                           (when (typep fname 'symbol)
                             fname))))
@@ -368,11 +368,13 @@ Check HANDLER's type according to `handler-type' slot of HOOK."
 Type must be something like:
 
   (function (string) (values integer t))
-"
+
+The `handler-type' of the defined hook class has `:class' allocation
+type, so that all hooks of such class have the same `handler-type'."
   (let* ((name (string name))
          (hook-class-name (intern (serapeum:concat "HOOK-" name))))
     `(defclass ,hook-class-name (hook)
-       ((handler-type :initform ',type)))))
+       ((handler-type :initform ',type :allocation :class)))))
 
 ;; TODO: Allow listing all the hooks?
 
