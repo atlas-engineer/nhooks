@@ -8,7 +8,8 @@
                 #:run-hook
                 #:run-hook
                 #:run-hook-until-failure
-                #:run-hook-until-success)
+                #:run-hook-until-success
+                #:with-hook-restart)
   (:import-from #:alexandria
                 #:required-argument)
   (:export
@@ -19,6 +20,7 @@
    #:run-hook
    #:run-hook-with-args-until-failure
    #:run-hook-with-args-until-success
+   #:with-disable-handler-restart
    #:default-combine-hook
    #:combine-hook-until-failure
    #:combine-hook-until-success
@@ -192,14 +194,14 @@ it's handlers accept the right argument types and return the right value types."
 (defmethod handlers ((hook hook)) (mapcar #'car (remove-if-not #'cdr (handlers-alist hook))))
 (defmethod disabled-handlers ((hook hook)) (mapcar #'car (remove-if #'cdr (handlers-alist hook))))
 
-(defmacro with-hook-restart ((hook handler) &body body)
+(defmacro with-disable-handler-restart ((handler) &body body)
   `(restart-case
-       (serapeum:with-hook-restart ,@body)
+       (progn ,@body)
      (disable-handler ()
        :report
        (lambda (stream)
          (format stream "Disable handler ~a which causes the error." ,handler))
-       (disable-hook ,hook ,handler))))
+       (disable-hook *hook* ,handler))))
 
 (defmethod default-combine-hook ((hook hook) &rest args)
   "Return the list of the results of the HOOK handlers applied from youngest to
@@ -208,8 +210,9 @@ Return '() when there is no handler.
 This is an acceptable `combination' for `hook'."
   (mapcan (lambda (handler-entry)
             (when (cdr handler-entry)
-              (with-hook-restart (hook (car handler-entry))
-                (list (apply (fn (car handler-entry)) args)))))
+              (with-disable-handler-restart ((car handler-entry))
+                (with-hook-restart
+                  (list (apply (fn (car handler-entry)) args))))))
           (handlers-alist hook)))
 
 (defmethod combine-hook-until-failure ((hook hook) &rest args)
@@ -220,8 +223,9 @@ This is an acceptable `combination' for `hook'."
   (let ((result nil))
     (loop for (handler . enable-p) in (handlers-alist hook)
           when enable-p
-            do (let ((res (with-hook-restart (hook handler)
-                            (apply (fn handler) args))))
+            do (let ((res (with-disable-handler-restart (handler)
+                            (with-hook-restart
+                              (apply (fn handler) args)))))
                (push res result)
                (unless res (return))))
     (nreverse result)))
@@ -236,8 +240,9 @@ to all handlers failing or an empty hook.
 This is an acceptable `combination' for `hook'."
   (loop for (handler . enable-p) in (handlers-alist hook)
           thereis (and enable-p
-                       (with-hook-restart (hook handler)
-                         (apply (fn handler) args)))))
+                       (with-disable-handler-restart (handler)
+                         (with-hook-restart
+                           (apply (fn handler) args))))))
 
 (defmethod combine-composed-hook ((hook hook) &rest args)
   "Return the result of the composition of the HOOK handlers on ARGS, from
@@ -249,8 +254,9 @@ This is an acceptable `combination' for `hook'."
     (declare (dynamic-extent reversed-alist))
     (loop for (handler . enable-p) in reversed-alist
           when enable-p
-            do (with-hook-restart (hook handler)
-                 (setf result (multiple-value-list (apply (fn handler) result)))))
+            do (with-disable-handler-restart (handler)
+                 (with-hook-restart
+                   (setf result (multiple-value-list (apply (fn handler) result))))))
     (values-list result)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -283,7 +289,8 @@ handlers-alist."
     (handlers-alist hook)))
 
 (defmethod run-hook ((hook hook) &rest args)
-  (apply (combination hook) hook args))
+  (let ((*hook* hook))
+    (apply (combination hook) hook args)))
 
 (defmethod run-hook-with-args-until-failure ((hook hook) &rest args)
   "This is equivalent to setting the combination function to
