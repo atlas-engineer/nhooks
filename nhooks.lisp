@@ -367,7 +367,7 @@ The following examples return different hooks:
 Check HANDLER's type according to `handler-type' slot of HOOK."
   (with-simple-restart (skip "Do not add this handler.")
     (with-simple-restart (reckless-continue "Add this handler nonetheless.")
-      (probe-ftype (symbol-function (fn handler)) (handler-type hook)))
+      (probe-ftype (fn handler) (handler-type hook)))
     (add-hook-internal hook handler :append append)))
 
 (defmacro define-hook-type (name type)
