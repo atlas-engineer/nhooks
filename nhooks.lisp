@@ -6,7 +6,6 @@
                 #:remove-hook
                 #:run-hooks
                 #:run-hook
-                #:run-hook
                 #:run-hook-until-failure
                 #:run-hook-until-success
                 #:with-hook-restart)
