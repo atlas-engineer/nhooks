@@ -267,7 +267,7 @@ This is an acceptable `combination' for `hook'."
 (defun add-hook-internal (hook handler &key append)
   "Add HANDLER to HOOK if not already in it.
 Return HOOK.
-HANDLER is also not added if in the `disabled-handlers'.
+HANDLER is also not added if it's disabled.
 If APPEND is non-nil, HANDLER is added at the end."
   (serapeum:synchronized (hook)
     (unless (assoc handler (handlers-alist hook) :test #'equals)
@@ -333,7 +333,8 @@ Without HANDLERS, enable all of them."
 
 (defun define-hook (hook-type name &key object handlers disabled-handlers combination)
   "Return a globally-accessible hook.
-The hook can be accessed with `find-hook' at (list NAME OBJECT)."
+The hook can be accessed with `find-hook' at (list NAME OBJECT).
+OBJECT is an arbitrary value the hook is associated to."
   (let ((hook
           (apply #'make-instance hook-type
                  :handlers handlers
@@ -355,7 +356,7 @@ The following examples return different hooks:
 
 (defmethod add-hook ((hook hook) handler &key append)
   "Add HANDLER to HOOK.  Return HOOK.
-Check HANDLER's type according to `handler-type' slot of HOOK."
+Check HANDLER's type according to the `handler-type' slot of HOOK."
   (with-simple-restart (skip "Do not add this handler.")
     (with-simple-restart (reckless-continue "Add this handler nonetheless.")
       (probe-ftype (fn handler) (handler-type hook)))
