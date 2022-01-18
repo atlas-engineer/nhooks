@@ -123,9 +123,7 @@ Detail: ~a" function ftype c))))
 
 (defmethod initialize-instance :after ((handler handler) &key &allow-other-keys)
   (with-slots (name fn) handler
-    (setf name (or name (let ((fname (nth-value 2 (function-lambda-expression fn))))
-                          (when (typep fname 'symbol)
-                            fname))))
+    (setf name (or name (name fn)))
     (unless name
       (error "Can't make a handler without a name"))))
 
@@ -154,6 +152,10 @@ their names are equal."
 (defmethod equals (obj1 obj2) (eq obj1 obj2))
 
 (defmethod name ((symbol symbol)) symbol)
+(defmethod name ((fn function))
+  (let ((fname (nth-value 2 (function-lambda-expression fn))))
+    (when (typep fname 'symbol)
+      fname)))
 (defmethod fn ((symbol symbol)) (symbol-function symbol))
 (defmethod description ((symbol symbol)) (documentation symbol 'function))
 
