@@ -199,6 +199,7 @@ it's handlers accept the right argument types and return the right value types."
 (defmethod disabled-handlers ((hook hook)) (mapcar #'first (remove-if #'rest (handlers-alist hook))))
 
 (defmacro with-disable-handler-restart ((handler) &body body)
+  "This is intended to wrap all handler executions."
   `(restart-case
        (progn ,@body)
      (disable-handler ()
