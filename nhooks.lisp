@@ -98,6 +98,10 @@ They serve two purposes as opposed to regular functions:
 
 With this extra information, it's possible to compare handlers and, in particular, avoid duplicates in hooks."))
 
+(defmethod print-object ((handler handler) stream)
+  (print-unreadable-object (handler stream :type t :identity t)
+    (format stream "~a" (name handler))))
+
 (defun probe-ftype (function ftype)
   "Invoke compiler to probe the type of FUNCTION.
 
