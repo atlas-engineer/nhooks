@@ -2,7 +2,8 @@
 ;;; Adapted from serapeum/contrib/hooks
 
 (defsystem "nhooks"
-  :description "Improved hooks facility built on serapeum."
+  :version "0.0.0"
+  :description "Improved hooks facility inspired by Serapeum."
   :author "Qiantan Hong <qhong@alum.mit.edu>"
   :license "MIT"
   :depends-on ("serapeum")
