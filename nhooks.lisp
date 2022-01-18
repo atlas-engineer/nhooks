@@ -147,8 +147,14 @@ their names are equal."
      (eq (name fn1)
          (name fn2)))))
 
-(defmethod equals ((fn handler) obj) (eq (name fn) obj))
+(defmethod equals ((h handler) (f function)) (eq (name h) (name f)))
+(defmethod equals ((f function) (h handler)) (eq (name h) (name f)))
+(defmethod equals ((f1 function) (f2 handler)) (eq (name f1) (name f2)))
+(defmethod equals ((f1 function) (f2 function)) (eq (name f1) (name f2)))
 (defmethod equals (obj (fn handler)) (eq (name fn) obj))
+(defmethod equals ((fn handler) obj) (eq (name fn) obj))
+(defmethod equals (obj (fn function)) (eq (name fn) obj))
+(defmethod equals ((fn function) obj) (eq (name fn) obj))
 (defmethod equals (obj1 obj2) (eq obj1 obj2))
 
 (defmethod name ((symbol symbol)) symbol)
@@ -279,7 +285,7 @@ If APPEND is non-nil, HANDLER is added at the end."
           (push (cons handler t) (handlers-alist hook))))
     hook))
 
-(declaim (ftype (function ((or handler symbol) list) (or handler boolean)) find-handler))
+(declaim (ftype (function ((or handler function symbol) list) (or handler function boolean)) find-handler))
 (defun find-handler (handler-or-name handlers)
   "Return handler matching HANDLER-OR-NAME in HANDLERS sequence."
   (find handler-or-name handlers :test #'equals))
