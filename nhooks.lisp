@@ -157,6 +157,7 @@ their names are equal."
     (when (typep fname 'symbol)
       fname)))
 (defmethod fn ((symbol symbol)) (symbol-function symbol))
+(defmethod fn ((function function)) function)
 (defmethod description ((symbol symbol)) (documentation symbol 'function))
 
 (defclass hook ()
