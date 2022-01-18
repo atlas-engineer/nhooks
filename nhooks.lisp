@@ -59,7 +59,7 @@
          :initform nil
          :documentation "
 Name of the handler.
-If defaults to the function name if `fn' is a named function.
+It defaults to the function name if `fn' is a named function.
 This is useful so that the user can build handlers out of anonymous functions.")
    (description :initarg :description
                 :accessor description
@@ -93,7 +93,7 @@ This can be left empty if the handler is not a setter."))
   (:documentation "Handlers are wrappers around functions used in typed hooks.
 They serve two purposes as opposed to regular functions:
 
-- They can embed a NAME so that anonymous functions can be conveniently used in lambda.
+- They can embed a NAME so that anonymous functions can be conveniently used in hooks.
 - If the handler is meant to be a setter, the PLACE and VALUE slot can be used to identify and compare setters.
 
 With this extra information, it's possible to compare handlers and, in particular, avoid duplicates in hooks."))
