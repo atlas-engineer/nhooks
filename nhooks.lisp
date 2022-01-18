@@ -159,7 +159,7 @@ their names are equal."
 
 (defclass hook ()
   ((handler-type :initarg :handler-type
-                 :accessor handler-type
+                 :reader handler-type
                  :initform nil
                  :documentation
                  "The exptected function type of handlers.")
