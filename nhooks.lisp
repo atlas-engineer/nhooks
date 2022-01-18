@@ -188,15 +188,15 @@ it's handlers accept the right argument types and return the right value types."
         (append (mapcar (alexandria:rcurry #'cons t) handlers)
                 (mapcar (alexandria:rcurry #'cons nil) disabled-handlers)
                 (handlers-alist hook)))
-  (dolist (handler (mapcar #'car (handlers-alist hook)))
+  (dolist (handler (mapcar #'first (handlers-alist hook)))
     (restart-case
         (probe-ftype (fn handler) (handler-type hook))
       (remove-handler () :report "Remove this handler."
         (remove-hook hook handler))
       (reckless-continue () :report "Retain this handler nonetheless."))))
 
-(defmethod handlers ((hook hook)) (mapcar #'car (remove-if-not #'cdr (handlers-alist hook))))
-(defmethod disabled-handlers ((hook hook)) (mapcar #'car (remove-if #'cdr (handlers-alist hook))))
+(defmethod handlers ((hook hook)) (mapcar #'first (remove-if-not #'rest (handlers-alist hook))))
+(defmethod disabled-handlers ((hook hook)) (mapcar #'first (remove-if #'rest (handlers-alist hook))))
 
 (defmacro with-disable-handler-restart ((handler) &body body)
   `(restart-case
@@ -214,9 +214,9 @@ Return '() when there is no handler.
 This is an acceptable `combination' for `hook'."
   (mapcan (lambda (handler-entry)
             (when (cdr handler-entry)
-              (with-disable-handler-restart ((car handler-entry))
+              (with-disable-handler-restart ((first handler-entry))
                 (with-hook-restart
-                  (list (apply (fn (car handler-entry)) args))))))
+                  (list (apply (fn (first handler-entry)) args))))))
           (handlers-alist hook)))
 
 (defmethod combine-hook-until-failure ((hook hook) &rest args)
@@ -325,7 +325,7 @@ Without HANDLERS, disable all of them."
   (serapeum:synchronized (hook)
     (dolist (handler-entry (handlers-alist hook))
       (when (or (not handlers)
-                (member (car handler-entry) handlers :test #'equals))
+                (member (first handler-entry) handlers :test #'equals))
         (rplacd handler-entry nil)))))
 
 (defmethod enable-hook ((hook hook) &rest handlers)
@@ -334,7 +334,7 @@ Without HANDLERS, enable all of them."
   (serapeum:synchronized (hook)
     (dolist (handler-entry (handlers-alist hook))
       (when (or (not handlers)
-                (member (car handler-entry) handlers :test #'equals))
+                (member (first handler-entry) handlers :test #'equals))
         (rplacd handler-entry t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
