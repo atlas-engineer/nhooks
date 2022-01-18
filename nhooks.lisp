@@ -302,19 +302,6 @@ handlers-alist."
 `combine-hook-until-success' and calling `run-hook'."
   (apply #'combine-hook-until-success hook args))
 
-(defun move-hook-handlers (hook source-handlers-slot destination-handlers-slot select-handlers)
-  (serapeum:synchronized (hook)
-    (let* ((handlers-to-move (if select-handlers
-                                 (intersection (slot-value hook source-handlers-slot)
-                                               select-handlers
-                                               :test #'equals)
-                                 (slot-value hook source-handlers-slot)))
-           (handlers-to-keep (set-difference (slot-value hook source-handlers-slot)
-                                             handlers-to-move)))
-      (setf (slot-value hook destination-handlers-slot)
-            (append handlers-to-move (slot-value hook destination-handlers-slot)))
-      (setf (slot-value hook source-handlers-slot) handlers-to-keep))))
-
 (defmethod disable-hook ((hook hook) &rest handlers)
   "Disable HANDLERS.
 Without HANDLERS, disable all of them."
