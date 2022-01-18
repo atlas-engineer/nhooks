@@ -251,7 +251,6 @@ Without handler, return ARGS as values.
 This is an acceptable `combination' for `hook'."
   (let ((result args)
         (reversed-alist (reverse (handlers-alist hook))))
-    (declare (dynamic-extent reversed-alist))
     (loop for (handler . enable-p) in reversed-alist
           when enable-p
             do (with-disable-handler-restart (handler)
