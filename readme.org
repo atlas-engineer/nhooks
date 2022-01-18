@@ -1,0 +1,28 @@
+* nhooks
+
+/A hook facility for Common Lisp./
+
+This package holds an enhanced implementation of hooks (extension points).
+It works similarly to Emacs hooks with crucial improvements:
+
+- If the compiler allows it (such as SBCL), type checking is performed
+  at compile-time and at run-time when adding handlers to a hook.
+
+- On failure, multiple restarts are offered, such as disabling the offending
+  handler or simply continuing to the next function.
+
+- The hook handler execution order and combination can be customized.
+
+- Anonymous functions (lambdas) can be handled as =handler= objects, which hold
+  a =name= slot.
+
+  Handlers are compared through their names.  A hook can contain only 1 handler
+  for a given name.
+
+- A special provision is taken for "setters", handlers that are meant to set a
+  given place to a given values.
+
+  Such =handler= objects can be compared and identified uniquely.
+
+This library was originally contributed by the maintainers of the [[https://nyxt.atlas.engineer/][Nyxt]] web
+browser to [[https://github.com/ruricolist/serapeum][Serapeum]].
