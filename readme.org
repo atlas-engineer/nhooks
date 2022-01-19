@@ -5,7 +5,7 @@
 This package holds an enhanced implementation of hooks (extension points).
 It works similarly to Emacs hooks with crucial improvements:
 
-- If the compiler allows it (such as SBCL), type checking is performed
+- If the compiler allows it (such as SBCL), type-checking is performed
   at compile-time and at run-time when adding handlers to a hook.
 
 - On failure, multiple restarts are offered, such as disabling the offending
@@ -13,11 +13,13 @@ It works similarly to Emacs hooks with crucial improvements:
 
 - The hook handler execution order and combination can be customized.
 
-- Anonymous functions (lambdas) can be handled as =handler= objects, which hold
-  a =name= slot.
+- Anonymous functions (lambdas) can be added to hooks as =handler= objects.
 
-  Handlers are compared through their names.  A hook can contain only 1 handler
-  for a given name.
+  When inspecting hooks, readable names are thus exposed instead of lambda
+  blackboxes.
+
+  Handlers are compared through their names (through the mandatory =name= slot).
+  A hook can not contain multiple handlers with the same name.
 
 - A special provision is taken for "setters", handlers that are meant to set a
   given place to a given values.
