@@ -236,10 +236,10 @@ This is an acceptable `combination' for `hook'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-hook-internal (hook handler &key append)
-  "Add HANDLER to HOOK if not already in it.
-Return HOOK.
-HANDLER is also not added if it's disabled.
-If APPEND is non-nil, HANDLER is added at the end."
+  "Add HANDLER to HOOK.
+Return HOOK.  If APPEND is non-nil, HANDLER is added at the end.  If
+HANDLER is already present in HOOK, move it to the front (or end if
+APPEND is non-nil) of `handler-alist' and ensure it is enabled."
   (serapeum:synchronized (hook)
     (alexandria:when-let ((old-handler (assoc handler (handlers-alist hook) :test #'equals)))
       (remove-hook hook (first old-handler)))
@@ -249,9 +249,13 @@ If APPEND is non-nil, HANDLER is added at the end."
     hook))
 
 (declaim (ftype (function ((or handler function symbol) list) (or handler function boolean)) find-handler))
-(defun find-handler (handler-or-name handlers)
-  "Return handler matching HANDLER-OR-NAME in HANDLERS sequence."
-  (find handler-or-name handlers :test #'equals))
+(defun find-handler (handler-or-name handlers &optional include-disabled)
+  "Return handler matching HANDLER-OR-NAME in HANDLERS sequence.
+If INCLUDE-DISABLED is non-nil, search both enabled and disabled
+handlers.  Otherwise, search only enabled handlers."
+  (if include-disabled
+      (car (assoc handler-or-name handlers-alist :test #'equals))
+      (find handler-or-name handlers :test #'equals)))
 
 (defmethod remove-hook ((hook hook) handler-or-name)
   "Remove handler entry matching HANDLER-OR-NAME from handlers-alist in HOOK.
