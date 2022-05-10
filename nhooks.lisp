@@ -189,7 +189,7 @@ This can be used to reverse the execution order, return a single value, etc."))
   (:documentation "This hook class serves as support for typed-hook.
 
 Typing in hook is crucial to guarantee that a hook is well formed, i.e. that
-it's handlers accept the right argument types and return the right value types."))
+its handlers accept the right argument types and return the right value types."))
 
 (defmethod initialize-instance :after ((hook hook) &key handlers disabled-handlers &allow-other-keys)
   (setf (handlers-alist hook)
