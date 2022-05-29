@@ -48,7 +48,10 @@
    #:hook-void
    #:hook-string->string
    #:hook-number->number
-   #:hook-any))
+   #:hook-any
+   ;; Short hook helpers
+   #:on
+   #:once-on))
 (in-package :nhooks)
 
 (defclass handler ()
@@ -389,3 +392,36 @@ type, so that all hooks of such class have the same `handler-type'."
 (define-hook-type string->string (function (string) string))
 (define-hook-type number->number (function (number) number))
 (define-hook-type any (function (&rest t)))
+
+(defmacro on (hook args &body body)
+  "Attach a handler with ARGS and BODY to the HOOK.
+
+ARGS can be
+- A symbol if there's only one argument to the callback.
+- A list of arguments.
+- An empty list, if the hook handlers take no argument."
+  (let ((handler-name (gensym "on-hook-handler"))
+        (args (alexandria:ensure-list args)))
+    `(add-hook
+      ,hook (make-instance 'handler
+                           :fn (lambda ,args
+                                 (declare (ignorable ,@args))
+                                 ,@body)
+                           :name (quote ,handler-name)))))
+
+(defmacro once-on (hook args &body body)
+  "Attach a handler with ARGS and BODY to the HOOK.
+
+Remove the handler after it fires the first time.
+
+See `on'."
+  (let ((handler-name (gensym "once-on-hook-handler"))
+        (args (alexandria:ensure-list args)))
+    (alexandria:once-only (hook)
+      `(add-hook
+        ,hook (make-instance 'handler
+                             :fn (lambda ,args
+                                   (declare (ignorable ,@args))
+                                   (remove-hook ,hook (quote ,handler-name))
+                                   ,@body)
+                             :name (quote ,handler-name))))))
