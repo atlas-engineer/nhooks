@@ -52,6 +52,11 @@ considered deprecated.
 
 ** Change log
 
+*** 1.1.1
+
+- Add package documentation.
+- Fix bug on CLISP.
+
 *** 1.1.0
 
 - Add =on= and =once-on= helpers.

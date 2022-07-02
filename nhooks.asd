@@ -2,7 +2,7 @@
 ;;; Adapted from serapeum/contrib/hooks
 
 (defsystem "nhooks"
-  :version "1.1.0"
+  :version "1.1.1"
   :description "Improved hooks facility inspired by Serapeum."
   :author "Qiantan Hong <qhong@alum.mit.edu>"
   :license "MIT"
