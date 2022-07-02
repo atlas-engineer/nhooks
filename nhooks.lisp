@@ -97,7 +97,6 @@ their names are equal."
 
 (defmethod equals ((h handler) (f function)) (eq (name h) (name f)))
 (defmethod equals ((f function) (h handler)) (eq (name h) (name f)))
-(defmethod equals ((f1 function) (f2 handler)) (eq (name f1) (name f2)))
 (defmethod equals ((f1 function) (f2 function)) (eq (name f1) (name f2)))
 (defmethod equals (obj (fn handler)) (eq (name fn) obj))
 (defmethod equals ((fn handler) obj) (eq (name fn) obj))
