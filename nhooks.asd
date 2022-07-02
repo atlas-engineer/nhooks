@@ -8,7 +8,8 @@
   :license "MIT"
   :depends-on ("serapeum")
   :in-order-to ((test-op (test-op "nhooks/tests")))
-  :components ((:file "nhooks")))
+  :components ((:file "package")
+               (:file "nhooks")))
 
 (defsystem "nhooks/tests"
   :description "Test suite for nhooks."
