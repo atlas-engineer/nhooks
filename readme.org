@@ -1,4 +1,4 @@
-* nhooks
+#+TITLE: NHooks
 
 /A hook facility for Common Lisp./
 
@@ -26,5 +26,32 @@ It works similarly to Emacs hooks with crucial improvements:
 
   Such =handler= objects can be compared and identified uniquely.
 
+** Example
+
+#+begin_src lisp
+  (let ((hook (make-instance 'nhooks:hook-number->number
+                             :handlers (list #'add-1 #'multiply-by-2)
+                             :combination #'nhooks:combine-composed-hook)))
+    (nhooks:run-hook hook 17))
+  ;; => 35
+#+end_src
+
+See the [[file:package.lisp][package]] documentation for a usage guide and more examples.
+
+** Road-map
+
+- [ ] Handlers should subclass generic functions and thus be funcallable.
+  - [ ] Setters could subclass handlers.
+
+** History
+
 This library was originally contributed by the maintainers of the [[https://nyxt.atlas.engineer/][Nyxt]] web
-browser to [[https://github.com/ruricolist/serapeum][Serapeum]].
+browser to [[https://github.com/ruricolist/serapeum][Serapeum]].  Then it got overhauled and backward compatibility broke,
+so a dedicated library was published instead.  The Serapeum contrib is
+considered deprecated.
+
+** Change log
+
+*** 1.1.0
+
+- Add =on= and =once-on= helpers.
