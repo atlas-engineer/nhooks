@@ -42,7 +42,8 @@ This can be left empty if the handler is not a setter."))
 They serve two purposes as opposed to regular functions:
 
 - They can embed a NAME so that anonymous functions can be conveniently used in hooks.
-- If the handler is meant to be a setter, the PLACE and VALUE slot can be used to identify and compare setters.
+- If the handler is meant to be a setter, the PLACE and VALUE slots can be used
+  to identify and compare setters.
 
 With this extra information, it's possible to compare handlers and, in particular, avoid duplicates in hooks."))
 
