@@ -228,10 +228,11 @@ Return HOOK.
 HANDLER is also not added if it's disabled.
 If APPEND is non-nil, HANDLER is added at the end."
   (serapeum:synchronized (hook)
-    (unless (assoc handler (handlers-alist hook) :test #'equals)
-      (if append
-          (alexandria:appendf (symbol-value hook) (list (cons handler t)))
-          (push (cons handler t) (handlers-alist hook))))
+    (alexandria:when-let ((old-handler (assoc handler (handlers-alist hook) :test #'equals)))
+      (remove-hook hook (first old-handler)))
+    (if append
+        (alexandria:appendf (symbol-value hook) (list (cons handler t)))
+        (push (cons handler t) (handlers-alist hook)))
     hook))
 
 (declaim (ftype (function ((or handler function symbol) list) (or handler function boolean)) find-handler))
