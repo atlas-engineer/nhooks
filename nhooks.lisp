@@ -253,6 +253,9 @@ handlers-alist."
     (handlers-alist hook)))
 
 (defmethod run-hook ((hook hook) &rest args)
+  "Invoke all the HOOK handlers with the default `combination'.
+
+Alternatively, use `funcall' of the hook for the same effect."
   (let ((*hook* hook))
     (apply (combination hook) hook args)))
 
