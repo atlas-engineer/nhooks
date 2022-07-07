@@ -6,7 +6,7 @@
   :description "Improved hooks facility inspired by Serapeum."
   :author "Qiantan Hong <qhong@alum.mit.edu>"
   :license "MIT"
-  :depends-on ("serapeum")
+  :depends-on ("serapeum" "closer-mop")
   :in-order-to ((test-op (test-op "nhooks/tests")))
   :components ((:file "package")
                (:file "nhooks")))

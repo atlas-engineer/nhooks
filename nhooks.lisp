@@ -136,12 +136,14 @@ removing them from the hook.")
                 :initform #'default-combine-hook
                 :documentation "
 This can be used to reverse the execution order, return a single value, etc."))
+  (:metaclass closer-mop:funcallable-standard-class)
   (:documentation "This hook class serves as support for typed-hook.
 
 Typing in hook is crucial to guarantee that a hook is well formed, i.e. that
 its handlers accept the right argument types and return the right value types."))
 
 (defmethod initialize-instance :after ((hook hook) &key handlers disabled-handlers &allow-other-keys)
+  (closer-mop:set-funcallable-instance-function hook (alexandria:curry #'run-hook hook))
   (setf (handlers-alist hook)
         (append (mapcar (alexandria:rcurry #'cons t) handlers)
                 (mapcar (alexandria:rcurry #'cons nil) disabled-handlers)
@@ -331,7 +333,8 @@ type, so that all hooks of such class have the same `handler-type'."
   (let* ((name (string name))
          (hook-class-name (intern (serapeum:concat "HOOK-" name))))
     `(defclass ,hook-class-name (hook)
-       ((handler-type :initform ',type :allocation :class)))))
+       ((handler-type :initform ',type :allocation :class))
+       (:metaclass closer-mop:funcallable-standard-class))))
 
 ;; TODO: Allow listing all the hooks?
 
