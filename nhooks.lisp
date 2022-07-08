@@ -38,6 +38,7 @@ If the handler is meant to be a setter, VALUE can be used to describe what FN is
 going to set to PLACE.
 In particular, PLACE and VALUE can be used to compare handlers.
 This can be left empty if the handler is not a setter."))
+  (:metaclass closer-mop:funcallable-standard-class)
   (:documentation "Handlers are wrappers around functions used in typed hooks.
 They serve two purposes as opposed to regular functions:
 
@@ -45,7 +46,10 @@ They serve two purposes as opposed to regular functions:
 - If the handler is meant to be a setter, the PLACE and VALUE slots can be used
   to identify and compare setters.
 
-With this extra information, it's possible to compare handlers and, in particular, avoid duplicates in hooks."))
+With this extra information, it's possible to compare handlers and, in particular, avoid duplicates in hooks.
+
+Handlers are `funcall'able. If you subclass those, don't forget to add
+a `closer-mop:funcallable-standard-class' to retain this property."))
 
 (defmethod print-object ((handler handler) stream)
   (print-unreadable-object (handler stream :type t :identity t)
@@ -71,6 +75,7 @@ Detail: ~a" function ftype c))))
   (values))
 
 (defmethod initialize-instance :after ((handler handler) &key &allow-other-keys)
+  (closer-mop:set-funcallable-instance-function handler (fn handler))
   (with-slots (name fn) handler
     (setf name (or name (name fn)))
     (unless name
@@ -140,7 +145,11 @@ This can be used to reverse the execution order, return a single value, etc."))
   (:documentation "This hook class serves as support for typed-hook.
 
 Typing in hook is crucial to guarantee that a hook is well formed, i.e. that
-its handlers accept the right argument types and return the right value types."))
+its handlers accept the right argument types and return the right value types.
+
+Hooks are `funcall'able. If you subclass those, don't forget to add a
+`closer-mop:funcallable-standard-class' to retain this
+property. `define-hook-type' does that for you."))
 
 (defmethod initialize-instance :after ((hook hook) &key handlers disabled-handlers &allow-other-keys)
   (closer-mop:set-funcallable-instance-function hook (alexandria:curry #'run-hook hook))
@@ -177,7 +186,7 @@ This is an acceptable `combination' for `hook'."
             (when (cdr handler-entry)
               (with-disable-handler-restart ((first handler-entry))
                 (with-hook-restart
-                  (list (apply (fn (first handler-entry)) args))))))
+                  (list (apply (first handler-entry) args))))))
           (handlers-alist hook)))
 
 (defmethod combine-hook-until-failure ((hook hook) &rest args)
@@ -190,7 +199,7 @@ This is an acceptable `combination' for `hook'."
           when enable-p
             do (let ((res (with-disable-handler-restart (handler)
                             (with-hook-restart
-                              (apply (fn handler) args)))))
+                              (apply handler args)))))
                (push res result)
                (unless res (return))))
     (nreverse result)))
@@ -207,7 +216,7 @@ This is an acceptable `combination' for `hook'."
           thereis (and enable-p
                        (with-disable-handler-restart (handler)
                          (with-hook-restart
-                           (apply (fn handler) args))))))
+                           (apply handler args))))))
 
 (defmethod combine-composed-hook ((hook hook) &rest args)
   "Return the result of the composition of the HOOK handlers on ARGS, from
@@ -220,7 +229,7 @@ This is an acceptable `combination' for `hook'."
           when enable-p
             do (with-disable-handler-restart (handler)
                  (with-hook-restart
-                   (setf result (multiple-value-list (apply (fn handler) result))))))
+                   (setf result (multiple-value-list (apply handler result))))))
     (values-list result)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
