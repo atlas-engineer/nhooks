@@ -75,7 +75,9 @@ Detail: ~a" function ftype c))))
   (values))
 
 (defmethod initialize-instance :after ((handler handler) &key &allow-other-keys)
-  (closer-mop:set-funcallable-instance-function handler (fn handler))
+  (closer-mop:set-funcallable-instance-function
+   handler (lambda (&rest args)
+             (apply (fn handler) args)))
   (with-slots (name fn) handler
     (setf name (or name (name fn)))
     (unless name
