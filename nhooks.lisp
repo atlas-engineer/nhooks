@@ -250,14 +250,16 @@ non-nil) of `handler-alist' and ensure it is enabled."
         (push (cons handler t) (handlers-alist hook)))
     hook))
 
-(declaim (ftype (function ((or handler function symbol) list) (or handler function boolean)) find-handler))
+(declaim (ftype (function ((or handler function symbol) list &optional boolean)
+                          (or handler function boolean))
+                find-handler))
 (defun find-handler (handler-or-name handlers &optional include-disabled)
   "Return handler matching HANDLER-OR-NAME in HANDLERS sequence.
 
 If INCLUDE-DISABLED is non-nil, search both enabled and disabled
 handlers.  Otherwise, search only enabled handlers."
   (if include-disabled
-      (car (assoc handler-or-name handlers-alist :test #'equals))
+      (car (assoc handler-or-name handlers :test #'equals))
       (find handler-or-name handlers :test #'equals)))
 
 (defmethod remove-hook ((hook hook) handler-or-name)
