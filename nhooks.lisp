@@ -89,9 +89,9 @@ Handlers are equal if they are setters of the same place and same value, or if
 their names are equal."
   (cond
     ((or (and (place fn1)
-              (not (place fn2) ))
+              (not (place fn2)))
          (and (place fn2)
-              (not (place fn1) )))
+              (not (place fn1))))
      nil)
     ((and (place fn1)
           (place fn2))
@@ -202,8 +202,8 @@ This is an acceptable `combination' for `hook'."
             do (let ((res (with-disable-handler-restart (handler)
                             (with-hook-restart
                               (apply handler args)))))
-               (push res result)
-               (unless res (return))))
+                 (push res result)
+                 (unless res (return))))
     (nreverse result)))
 
 (defmethod combine-hook-until-success ((hook hook) &rest args)
@@ -246,7 +246,7 @@ non-nil) of `handler-alist' and ensure it is enabled."
     (alexandria:when-let ((old-handler (assoc handler (handlers-alist hook) :test #'equals)))
       (remove-hook hook (first old-handler)))
     (if append
-        (alexandria:appendf (symbol-value hook) (list (cons handler t)))
+        (alexandria:appendf (handlers-alist hook) (list (cons handler t)))
         (push (cons handler t) (handlers-alist hook)))
     hook))
 
