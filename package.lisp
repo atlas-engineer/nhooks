@@ -51,7 +51,8 @@
    #:hook-any
    ;; Short hook helpers
    #:on
-   #:once-on)
+   #:once-on
+   #:wait-on)
   (:documentation "A hook is an instance of the `nhooks:hook' class.
 You can define new hook types with the `nhooks:define-hook-type' helper.
 Examples:

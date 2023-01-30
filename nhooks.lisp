@@ -399,3 +399,37 @@ See `on'."
                                    (remove-hook ,hook (quote ,handler-name))
                                    ,@body)
                              :name (quote ,handler-name))))))
+
+(defstruct promise
+  (lock (bt:make-lock))
+  (condition (bt:make-condition-variable))
+  (value nil))
+
+(defun fulfill (promise &optional value)
+  (setf (promise-value promise) value)
+  (bt:condition-notify (promise-condition promise)))
+
+(defun force (promise)
+  (let ((lock (promise-lock promise)))
+    (bt:with-lock-held (lock)
+      (bt:condition-wait (promise-condition promise) lock))
+    (promise-value promise)))
+
+(defmacro wait-on (hook args &body body)
+  "Wait until HOOK is run.
+Note that it does not necessarily wait until hook has finished running all
+handlers.
+Return the BODY return value."
+  (alexandria:with-gensyms (promise)
+    (let ((handler-name (gensym "wait-on-handler"))
+          (args (alexandria:ensure-list args)))
+      (alexandria:once-only (hook)
+        `(let ((,promise (make-promise)))
+           (add-hook
+            ,hook (make-instance 'handler
+                                 :fn (lambda ,args
+                                       (declare (ignorable ,@args))
+                                       (remove-hook ,hook (quote ,handler-name))
+                                       (fulfill ,promise (progn ,@body)))
+                                 :name (quote ,handler-name)))
+           (force ,promise))))))
