@@ -146,3 +146,20 @@
               mul-handler)
     (prove-is (nhooks:find-handler other-handler handlers)
               nil)))
+
+(subtest "Wait on"
+  (let* ((x 17)
+         (side-effect 0)
+         (hook (make-instance 'nhooks:hook-number->number
+                              :handlers (list #'mul2))))
+    (let ((th (bt:make-thread (lambda ()
+                                (nhooks:wait-on hook y
+                                  (incf side-effect)
+                                  (1+ y))))))
+      (bt:make-thread (lambda ()
+                        (sleep 0.5)
+                        (nhooks:run-hook hook x)))
+      (prove-is (bt:join-thread th) 18)
+      (prove-is side-effect 1)
+      (nhooks:run-hook hook x)
+      (prove-is side-effect 1))))
