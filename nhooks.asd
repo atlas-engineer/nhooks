@@ -12,6 +12,10 @@
   :components ((:file "package")
                (:file "nhooks")))
 
+(defsystem "nhooks/submodules"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-submodule-system)
+
 (defsystem "nhooks/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
