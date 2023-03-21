@@ -7,14 +7,26 @@
   :author "Qiantan Hong <qhong@alum.mit.edu>"
   :license "MIT"
   :depends-on ("bordeaux-threads" "serapeum" "closer-mop")
-  :in-order-to ((test-op (test-op "nhooks/tests")))
+  :in-order-to ((test-op (test-op "nhooks/tests")
+                         (test-op "nhooks/tests/compilation")))
   :components ((:file "package")
                (:file "nhooks")))
 
 (defsystem "nhooks/tests"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
   :description "Test suite for nhooks."
   :author "Qiantan Hong <qhong@alum.mit.edu>"
   :license "MIT"
-  :depends-on ("serapeum" "fiveam")
-  :perform (test-op (o c) (symbol-call :5am :run! (read-from-string "nhooks/tests::nhooks")))
-  :components ((:file "tests")))
+  :depends-on ("nhooks")
+  :targets (:package :nhooks/tests)
+  :serial t
+  :pathname "tests/"
+  :components ((:file "package")
+               (:file "tests")))
+
+(defsystem "nhooks/tests/compilation"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-compilation-test-system
+  :depends-on ("nhooks")
+  :packages (:nhooks))
