@@ -166,8 +166,15 @@ property. `define-hook-type' does that for you."))
         (remove-hook hook handler))
       (reckless-continue () :report "Retain this handler nonetheless."))))
 
-(defmethod handlers ((hook hook)) (mapcar #'first (remove-if-not #'rest (handlers-alist hook))))
-(defmethod disabled-handlers ((hook hook)) (mapcar #'first (remove-if #'rest (handlers-alist hook))))
+(defgeneric handlers (hook)
+  (:method ((hook hook))
+    (mapcar #'first (remove-if-not #'rest (handlers-alist hook))))
+  (:documentation "All the enabled handlers."))
+
+(defgeneric disabled-handlers (hook)
+  (:method ((hook hook))
+    (mapcar #'first (remove-if #'rest (handlers-alist hook))))
+  (:documentation "All the disabled handlers."))
 
 (defmacro with-disable-handler-restart ((handler) &body body)
   "This is intended to wrap all handler executions."
@@ -179,60 +186,64 @@ property. `define-hook-type' does that for you."))
          (format stream "Disable handler ~a which causes the error." ,handler))
        (disable-hook *hook* ,handler))))
 
-(defmethod default-combine-hook ((hook hook) &rest args)
-  "Return the list of the results of the HOOK handlers applied from youngest to
+(defgeneric default-combine-hook (hook &rest args)
+  (:method ((hook hook) &rest args)
+    (mapcan (lambda (handler-entry)
+              (when (cdr handler-entry)
+                (with-disable-handler-restart ((first handler-entry))
+                  (with-hook-restart
+                    (list (apply (first handler-entry) args))))))
+            (handlers-alist hook)))
+  (:documentation "Return the list of the results of the HOOK handlers applied from youngest to
 oldest to ARGS.
 Return '() when there is no handler.
-This is an acceptable `combination' for `hook'."
-  (mapcan (lambda (handler-entry)
-            (when (cdr handler-entry)
-              (with-disable-handler-restart ((first handler-entry))
-                (with-hook-restart
-                  (list (apply (first handler-entry) args))))))
-          (handlers-alist hook)))
+This is an acceptable `combination' for `hook'."))
 
-(defmethod combine-hook-until-failure ((hook hook) &rest args)
-  "Return the list of values until the first nil result.
+(defgeneric combine-hook-until-failure (hook &rest args)
+  (:method ((hook hook) &rest args)
+    (let ((result nil))
+      (loop for (handler . enable-p) in (handlers-alist hook)
+            when enable-p
+              do (let ((res (with-disable-handler-restart (handler)
+                              (with-hook-restart
+                                (apply handler args)))))
+                   (push res result)
+                   (unless res (return))))
+      (nreverse result)))
+  (:documentation "Return the list of values until the first nil result.
 Handlers after the failing one are not run.
 
-This is an acceptable `combination' for `hook'."
-  (let ((result nil))
-    (loop for (handler . enable-p) in (handlers-alist hook)
-          when enable-p
-            do (let ((res (with-disable-handler-restart (handler)
-                            (with-hook-restart
-                              (apply handler args)))))
-                 (push res result)
-                 (unless res (return))))
-    (nreverse result)))
+This is an acceptable `combination' for `hook'."))
 
-(defmethod combine-hook-until-success ((hook hook) &rest args)
-  "Return the value of the first non-nil result.
+(defgeneric combine-hook-until-success (hook &rest args)
+  (:method ((hook hook) &rest args)
+    (loop for (handler . enable-p) in (handlers-alist hook)
+          thereis (and enable-p
+                       (with-disable-handler-restart (handler)
+                         (with-hook-restart
+                           (apply handler args))))))
+  (:documentation "Return the value of the first non-nil result.
 Handlers after the successful one are not run.
 
 You need to check if the hook has handlers to know if a NIL return value is due
 to all handlers failing or an empty hook.
 
-This is an acceptable `combination' for `hook'."
-  (loop for (handler . enable-p) in (handlers-alist hook)
-          thereis (and enable-p
-                       (with-disable-handler-restart (handler)
-                         (with-hook-restart
-                           (apply handler args))))))
+This is an acceptable `combination' for `hook'."))
 
-(defmethod combine-composed-hook ((hook hook) &rest args)
-  "Return the result of the composition of the HOOK handlers on ARGS, from
+(defgeneric combine-composed-hook (hook &rest args)
+  (:method ((hook hook) &rest args)
+    (let ((result args)
+          (reversed-alist (reverse (handlers-alist hook))))
+      (loop for (handler . enable-p) in reversed-alist
+            when enable-p
+              do (with-disable-handler-restart (handler)
+                   (with-hook-restart
+                     (setf result (multiple-value-list (apply handler result))))))
+      (values-list result)))
+  (:documentation "Return the result of the composition of the HOOK handlers on ARGS, from
 oldest to youngest.
 Without handler, return ARGS as values.
-This is an acceptable `combination' for `hook'."
-  (let ((result args)
-        (reversed-alist (reverse (handlers-alist hook))))
-    (loop for (handler . enable-p) in reversed-alist
-          when enable-p
-            do (with-disable-handler-restart (handler)
-                 (with-hook-restart
-                   (setf result (multiple-value-list (apply handler result))))))
-    (values-list result)))
+This is an acceptable `combination' for `hook'."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun add-hook-internal (hook handler &key append)
@@ -273,40 +284,45 @@ handlers-alist."
               (delete handler-entry (handlers-alist hook)))))
     (handlers-alist hook)))
 
-(defmethod run-hook ((hook hook) &rest args)
-  "Invoke all the HOOK handlers with the default `combination'.
+(defgeneric run-hook (hook &rest args)
+  (:method ((hook hook) &rest args)
+    (let ((*hook* hook))
+      (apply (combination hook) hook args)))
+  (:documentation "Invoke all the HOOK handlers with the default `combination'.
 
-Alternatively, use `funcall' of the hook for the same effect."
-  (let ((*hook* hook))
-    (apply (combination hook) hook args)))
+Alternatively, use `funcall' of the hook for the same effect."))
 
-(defmethod run-hook-with-args-until-failure ((hook hook) &rest args)
-  "This is equivalent to setting the combination function to
-`combine-hook-until-failure' and calling `run-hook'."
-  (apply #'combine-hook-until-failure hook args))
+(defgeneric run-hook-with-args-until-failure (hook &rest args)
+  (:method ((hook hook) &rest args)
+    (apply #'combine-hook-until-failure hook args))
+  (:documentation "This is equivalent to setting the combination function to
+`combine-hook-until-failure' and calling `run-hook'."))
 
-(defmethod run-hook-with-args-until-success ((hook hook) &rest args)
-  "This is equivalent to setting the combination function to
-`combine-hook-until-success' and calling `run-hook'."
-  (apply #'combine-hook-until-success hook args))
+(defgeneric run-hook-with-args-until-success (hook &rest args)
+  (:method ((hook hook) &rest args)
+    (apply #'combine-hook-until-success hook args))
+  (:documentation "This is equivalent to setting the combination function to
+`combine-hook-until-success' and calling `run-hook'."))
 
-(defmethod disable-hook ((hook hook) &rest handlers)
-  "Disable HANDLERS.
-Without HANDLERS, disable all of them."
-  (serapeum:synchronized (hook)
-    (dolist (handler-entry (handlers-alist hook))
-      (when (or (not handlers)
-                (member (first handler-entry) handlers :test #'equals))
-        (rplacd handler-entry nil)))))
+(defgeneric disable-hook (hook &rest handlers)
+  (:method ((hook hook) &rest handlers)
+    (serapeum:synchronized (hook)
+      (dolist (handler-entry (handlers-alist hook))
+        (when (or (not handlers)
+                  (member (first handler-entry) handlers :test #'equals))
+          (rplacd handler-entry nil)))))
+  (:documentation "Disable HANDLERS.
+Without HANDLERS, disable all of them."))
 
-(defmethod enable-hook ((hook hook) &rest handlers)
-  "Enable HANDLERS.
-Without HANDLERS, enable all of them."
-  (serapeum:synchronized (hook)
-    (dolist (handler-entry (handlers-alist hook))
-      (when (or (not handlers)
-                (member (first handler-entry) handlers :test #'equals))
-        (rplacd handler-entry t)))))
+(defgeneric enable-hook (hook &rest handlers)
+  (:method ((hook hook) &rest handlers)
+    (serapeum:synchronized (hook)
+      (dolist (handler-entry (handlers-alist hook))
+        (when (or (not handlers)
+                  (member (first handler-entry) handlers :test #'equals))
+          (rplacd handler-entry t)))))
+  (:documentation "Enable HANDLERS.
+Without HANDLERS, enable all of them."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global hooks.
@@ -346,7 +362,7 @@ Check HANDLER's type according to the `handler-type' slot of HOOK."
       (probe-ftype (fn handler) (handler-type hook)))
     (add-hook-internal hook handler :append append)))
 
-(defmacro define-hook-type (name type)
+(defmacro define-hook-type (name type &optional documentation)
   "Define hook class.
 Type must be something like:
 
@@ -358,14 +374,20 @@ type, so that all hooks of such class have the same `handler-type'."
          (hook-class-name (intern (serapeum:concat "HOOK-" name))))
     `(defclass ,hook-class-name (hook)
        ((handler-type :initform ',type :allocation :class))
-       (:metaclass closer-mop:funcallable-standard-class))))
+       (:metaclass closer-mop:funcallable-standard-class)
+       ,@(when documentation
+           `((:documentation ,documentation))))))
 
 ;; TODO: Allow listing all the hooks?
 
-(define-hook-type void (function ()))
-(define-hook-type string->string (function (string) string))
-(define-hook-type number->number (function (number) number))
-(define-hook-type any (function (&rest t)))
+(define-hook-type void (function ())
+  "Empty hook type with no arguments.")
+(define-hook-type string->string (function (string) string)
+  "Hook that takes a string and produces a new one.")
+(define-hook-type number->number (function (number) number)
+  "Hook taking a number and returning a number.")
+(define-hook-type any (function (&rest t))
+  "Hook accepting any arguments and returning anything.")
 
 (defmacro on (hook args &body body)
   "Attach a handler with ARGS and BODY to the HOOK.

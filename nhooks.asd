@@ -28,5 +28,7 @@
 (defsystem "nhooks/tests/compilation"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-compilation-test-system
+  :undocumented-symbols-to-ignore (:name :description :fn :place :value ; handler slots
+                                         :handler-type :handlers-alist :combination) ;hook slots
   :depends-on ("nhooks")
   :packages (:nhooks))
