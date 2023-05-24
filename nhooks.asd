@@ -5,6 +5,9 @@
   :version "1.2.0"
   :description "Improved hooks facility inspired by Serapeum."
   :author "Qiantan Hong <qhong@alum.mit.edu>"
+  :homepage "https://github.com/atlas-engineer/nhooks"
+  :bug-tracker "https://github.com/atlas-engineer/nhooks/issues"
+  :source-control (:git "https://github.com/atlas-engineer/nhooks.git")
   :license "MIT"
   :depends-on ("bordeaux-threads" "serapeum" "closer-mop")
   :in-order-to ((test-op (test-op "nhooks/tests")
