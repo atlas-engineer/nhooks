@@ -55,7 +55,7 @@ considered deprecated.
 *** 1.2.0
 
 - Hooks and handlers are now "funcallable", for instance with =(funcall HOOK ARGS)=.
-- =find-handler=: New optional =include-diabled= argument.
+- =find-handler=: New optional =include-disabled= argument.
 - Fix bug when appending handler.
 - Add =wait-on= helper.
 
