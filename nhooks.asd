@@ -2,7 +2,7 @@
 ;;; Adapted from serapeum/contrib/hooks
 
 (defsystem "nhooks"
-  :version "1.2.0"
+  :version "1.2.1"
   :description "Improved hooks facility inspired by Serapeum."
   :author "Qiantan Hong <qhong@alum.mit.edu>"
   :homepage "https://github.com/atlas-engineer/nhooks"

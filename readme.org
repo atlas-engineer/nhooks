@@ -52,6 +52,11 @@ considered deprecated.
 
 ** Change log
 
+*** 1.2.1
+
+- Major refactoring (turn all the =defmethod=-defined functions into generics).
+- =define-hook-type=: New optional =documentation= argument.
+
 *** 1.2.0
 
 - Hooks and handlers are now "funcallable", for instance with =(funcall HOOK ARGS)=.
