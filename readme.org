@@ -45,7 +45,7 @@ See the [[file:package.lisp][package]] documentation for a usage guide and more 
 
 ** History
 
-This library was originally contributed by the maintainers of the [[https://nyxt.atlas.engineer/][Nyxt]] web
+This library was originally contributed by the maintainers of the [[https://nyxt-browser.com/][Nyxt]] web
 browser to [[https://github.com/ruricolist/serapeum][Serapeum]].  Then it got overhauled and backward compatibility broke,
 so a dedicated library was published instead.  The Serapeum contrib is
 considered deprecated.
