@@ -10,30 +10,18 @@
   :source-control (:git "https://github.com/atlas-engineer/nhooks.git")
   :license "MIT"
   :depends-on ("bordeaux-threads" "serapeum" "closer-mop")
-  :in-order-to ((test-op (test-op "nhooks/tests")
-                         (test-op "nhooks/tests/compilation")))
   :components ((:file "package")
-               (:file "nhooks")))
-
-(defsystem "nhooks/submodules"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-submodule-system)
+               (:file "nhooks"))
+  :in-order-to ((test-op (test-op "nhooks/tests"))))
 
 (defsystem "nhooks/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :description "Test suite for nhooks."
-  :author "Qiantan Hong <qhong@alum.mit.edu>"
-  :license "MIT"
-  :depends-on ("nhooks")
-  :targets (:package :nhooks/tests)
+  :depends-on ("nhooks" "lisp-unit2")
   :serial t
   :pathname "tests/"
   :components ((:file "package")
-               (:file "tests")))
-
-(defsystem "nhooks/tests/compilation"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-compilation-test-system
-  :depends-on ("nhooks")
-  :packages (:nhooks))
+               (:file "tests"))
+  :perform (test-op (op c)
+                    (eval-input
+                     "(lisp-unit2:run-tests
+                       :package :nhooks/tests
+                       :run-contexts #'lisp-unit2:with-summary-context)")))
