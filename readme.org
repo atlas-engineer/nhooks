@@ -52,6 +52,10 @@ considered deprecated.
 
 ** Change log
 
+*** 1.2.2
+
+- Remove =NASDF= as a dependency.
+
 *** 1.2.1
 
 - Major refactoring (turn all the =defmethod=-defined functions into generics).
